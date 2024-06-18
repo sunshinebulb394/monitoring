@@ -90,7 +90,7 @@ export function NotificationBell() {
   
     return num.toString();
   }
-  
+
   useEffect(() => {
     let cleanup: () => void | undefined;
 
@@ -110,6 +110,16 @@ export function NotificationBell() {
   useEffect(() => {
     const savedPingData = localStorage.getItem("pingData");
     const parsedPingData: PingDataMap[] = savedPingData ? JSON.parse(savedPingData) : [];
+    parsedPingData.sort((a, b) => {
+      if (a.unread !== b.unread) {
+        return a.unread ? -1 : 1; // Sort unread notifications first
+      } else if (a.unread && b.unread) {
+        // Sort by createdAt if both are unread
+        return new Date(b.pingResult.pingStartTime).getTime() - new Date(a.pingResult.pingStartTime).getTime();
+      } else {
+        return 0;
+      }
+    });
     const unreadCount = parsedPingData.filter(data => data.unread).length;
     setPingData(parsedPingData);
     setNotificationCount(unreadCount);
@@ -131,7 +141,7 @@ export function NotificationBell() {
   }, [notification]);
 
   return (
-    <div className="relative">
+    <div className="relative ">
       <Popover>
         <PopoverTrigger>
           <i
@@ -143,12 +153,12 @@ export function NotificationBell() {
           </i>
           {showBadge(notificationCount)}
         </PopoverTrigger>
-        <PopoverContent>
+        <PopoverContent align="end" >
           <ScrollArea className="h-[600px] w-full rounded-md border">
             <div>
               {pingData.map((pingD, index) => (
                 <div key={index}>
-                  <div>{pingD.pingResult.ipAddress}</div>
+                  <div>{pingD.pingResult.ipAddress} <br /> {pingD.pingResult.pingStartTime} <br /> {pingD.unread} </div>
                   <Separator className="my-2" />
                 </div>
               ))}

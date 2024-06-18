@@ -29,7 +29,7 @@ export default function sidebar() {
           <div className="xs:inline md:hidden  w-14 pl-2">
             <Slidebar/>
           </div>
-          <div className=" md:flex-initial md:w-96  xs:flex-1  ">
+          <div className="flex md:flex-initial md:w-96  xs:flex-1  justify-end pe-5">
             {/* <SearchBar/> */}
             <NotificationBell/>
           </div>
