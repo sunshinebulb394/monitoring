@@ -27,12 +27,18 @@ async function pingD(
 
   socket.onmessage = (event: MessageEvent) => {
     const data: PingResult = JSON.parse(event.data);
-    
     const notificationData: PingDataMap = {
       pingResult: data,
       unread: true,
     };
-    setNotification(notificationData);
+    const savedPingData = localStorage.getItem("pingData");
+    const parsedPingData: PingDataMap[] = savedPingData ? JSON.parse(savedPingData) : [];
+
+    const updatedData = [...parsedPingData, notificationData];
+
+    localStorage.setItem("pingData",JSON.stringify(updatedData))
+
+    // setNotification(notificationData);
   };
 
   socket.onerror = (error) => {
@@ -55,11 +61,17 @@ export function NotificationBell() {
   const [pingData, setPingData] = useState<PingDataMap[]>([]);
 
   const resetNotificationCount = () => {
-    setPingData((prevData) => {
-      const updatedData = prevData.map(data => ({ ...data, unread: false }));
-      localStorage.setItem("pingData", JSON.stringify(updatedData));
-      return updatedData;
-    });
+    const savedPingData = localStorage.getItem("pingData");
+    const parsedPingData: PingDataMap[] = savedPingData ? JSON.parse(savedPingData) : [];
+    const updatedData = parsedPingData.map(data => ({ ...data, unread: false }));
+    localStorage.setItem("pingData", JSON.stringify(updatedData));
+
+    // setPingData((prevData) => {
+    //   const updatedData = prevData.map(data => ({ ...data, unread: false }));
+    //   localStorage.setItem("pingData", JSON.stringify(updatedData));
+      
+    //   return updatedData;
+    // });
     setNotificationCount(0);
   };
 
@@ -110,35 +122,37 @@ export function NotificationBell() {
   useEffect(() => {
     const savedPingData = localStorage.getItem("pingData");
     const parsedPingData: PingDataMap[] = savedPingData ? JSON.parse(savedPingData) : [];
-    parsedPingData.sort((a, b) => {
-      if (a.unread !== b.unread) {
-        return a.unread ? -1 : 1; // Sort unread notifications first
-      } else if (a.unread && b.unread) {
-        // Sort by createdAt if both are unread
-        return new Date(b.pingResult.pingStartTime).getTime() - new Date(a.pingResult.pingStartTime).getTime();
-      } else {
-        return 0;
-      }
-    });
     const unreadCount = parsedPingData.filter(data => data.unread).length;
-    setPingData(parsedPingData);
     setNotificationCount(unreadCount);
+
+    // parsedPingData.sort((a, b) => {
+    //   if (a.unread !== b.unread) {
+    //     return a.unread ? -1 : 1; // Sort unread notifications first
+    //   } else if (a.unread && b.unread) {
+    //     // Sort by createdAt if both are unread
+    //     return new Date(b.pingResult.pingStartTime).getTime() - new Date(a.pingResult.pingStartTime).getTime();
+    //   } else {
+    //     return 0;
+    //   }
+    // });
+    // setPingData(parsedPingData);
   }, []);
 
   useEffect(() => {
-    if (notification) {
-      setPingData((prevData) => {
-        const updatedData = [...prevData, notification];
-        localStorage.setItem("pingData", JSON.stringify(updatedData));
-        return updatedData;
-      });
-      const savedPingData = localStorage.getItem("pingData");
+    // if (notification) {
+    //   setPingData((prevData) => {
+    //     const updatedData = [...prevData, notification];
+    //     localStorage.setItem("pingData", JSON.stringify(updatedData));
+    //     return updatedData;
+    //   });
+      
+    // }
+    const savedPingData = localStorage.getItem("pingData");
     const parsedPingData: PingDataMap[] = savedPingData ? JSON.parse(savedPingData) : [];
     const unreadCount = parsedPingData.filter(data => data.unread).length;
 
       setNotificationCount(unreadCount);
-    }
-  }, [notification]);
+  }, []);
 
   return (
     <div className="relative ">
@@ -156,9 +170,20 @@ export function NotificationBell() {
         <PopoverContent align="end" >
           <ScrollArea className="h-[600px] w-full rounded-md border">
             <div>
-              {pingData.map((pingD, index) => (
+              {pingData
+              .sort((a, b) => {
+                if (a.unread !== b.unread) {
+                  return a.unread ? -1 : 1; // Sort unread notifications first
+                } else if (a.unread && b.unread) {
+                  // Sort by createdAt if both are unread
+                  return new Date(b.pingResult.pingStartTime).getTime() - new Date(a.pingResult.pingStartTime).getTime();
+                } else {
+                  return 0;
+                }
+              })
+              .map((pingD, index) => (
                 <div key={index}>
-                  <div>{pingD.pingResult.ipAddress} <br /> {pingD.pingResult.pingStartTime} <br /> {pingD.unread ? 'true':'false'} </div>
+                  <div>{pingD.pingResult.ipAddress} <br /> {pingD.pingResult.pingStartTime} <br /> {pingD.unread} </div>
                   <Separator className="my-2" />
                 </div>
               ))}

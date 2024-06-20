@@ -130,12 +130,13 @@ public class PingService {
 
     private void buildWindowsPingResults(Process process, IpObj ip, OffsetDateTime startTime, OffsetDateTime endTime) throws IOException {
         Buffer buffer = Buffer.buffer(process.getInputStream().readAllBytes());
-        System.out.println(buffer.toString());
         String pingOutput = buffer.toString();
 
         PingResult pingResult = new PingResult();
         JsonObject jsonObject = new JsonObject();
-
+        jsonObject.put("id",pingResult.getId());
+        jsonObject.put("ipAddress",ip.getIpAddress());
+        jsonObject.put("pingStartTime",startTime);
         Arrays.stream(pingOutput.split("\n")).forEach(line -> {
             if(line.contains(("Minimum = "))) {
                 String[] parts = line.split(" = |ms, |ms, |ms");
@@ -168,6 +169,7 @@ public class PingService {
         pingResult.setIpAddress(ip.getIpAddress());
         log.debug(pingResult.toString());
 //        sendPingResult(pingResult);
+        chatWebSocket.broadcast(jsonObject.toString());
 
         savePingResultList(pingResult);
 
