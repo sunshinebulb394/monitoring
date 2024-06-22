@@ -52,7 +52,7 @@ export default function DashboardDatePicker({
             <form
                 action={getDailyAvgLatencyStats}
                   // onSubmit={form.handleSubmit(handleSubmit)}
-                  className="xs:grid grid-rows-2 gap-2 md:flex space-x-1">
+                  className="xs:grid grid-rows-2 gap-2 lg:flex space-x-1">
                 <FormField
                     control={form.control}
                     name="dateRange"
@@ -63,12 +63,12 @@ export default function DashboardDatePicker({
 
                                 <div className={cn("grid gap-2", className)}>
                                     <Popover modal={true}>
-                                        <PopoverTrigger asChild>
+                                        <PopoverTrigger asChild >
                                             <Button
                                                 id="date"
                                                 variant="outline"
                                                 className={cn(
-                                                    "w-[300px] justify-start text-left font-normal",
+                                                    "justify-start text-left font-normal border",
                                                     !date && "text-muted-foreground"
                                                 )}
                                             >

@@ -51,11 +51,11 @@ export default async function IpCards() {
         }
 
         return (
-            <div key={ipCard.cardName} className="border rounded-lg bg-background p-5 grid grid-cols-2 gap-y-4  h-full row-span-12">
+            <div key={ipCard.cardName} className="border rounded-lg bg-background py-2 px-5 grid grid-cols-2 gap-y-4  xs:row-span-2 sm:row-span-12">
                 <span className="scroll-m-20 text-xl font-semibold tracking-tight col-start-1">
                     {title}
                 </span>
-                <NotebookText className={`h-6 w-7 ${iconColor} col-start-2`} />
+                <NotebookText className={`h-6 w-7 ${iconColor} col-start-3`} />
                 <div className="block col-span-2">
                     {ipCard.total}
                 </div>
@@ -64,7 +64,7 @@ export default async function IpCards() {
     };
 
     return (
-        <div className="grid xs:grid-rows-6 md:grid-cols-4 xs:row-span-5 md:row-span-2 xs:gap-1 md:gap-x-5 ">
+        <div className="grid xs:grid-rows-6 sm:grid-cols-3 md:grid-cols-4 xs:row-span-5 md:row-span-2 xs:gap-1 md:gap-x-5 ">
             {ipCards.map(ipCard => card(ipCard))}
         </div>
     );

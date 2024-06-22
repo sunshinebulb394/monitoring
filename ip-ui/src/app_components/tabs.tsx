@@ -29,14 +29,14 @@ export default function TabsDemo() {
           <TabsTrigger value="account" className="col-span-3 " >Account</TabsTrigger>
           <TabsTrigger value="password" className="col-span-3 ">Password</TabsTrigger>
         </TabsList>
-        <TabsContent value="account" className="lg:grid grid-cols-3 gap-x-3  row-span-11" >
-          <Card className="col-span-2 h-full">
+        <TabsContent value="account" className="grid xs:grid-rows-2 sm:grid-cols-3 gap-x-3 gap-y-2 row-span-11 border" >
+          <Card className="col-span-2 row-span-12">
             <CardContent className="p-1 m-0 h-full" >
             <Chart/>
             </CardContent>
           </Card>
 
-          <Card className="col-span-1 ">
+          <Card className="xs:col-span-2 md:col-span-1 row-span-12 h-full">
             <CardHeader>
               <CardTitle>
                 Choose Dates
