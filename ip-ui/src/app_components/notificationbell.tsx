@@ -1,26 +1,36 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { PingResult } from "@/app/actions";
+import { PingResult } from "@/app/types";
+import { PingDataMap } from "@/app/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { formatDistanceToNowStrict } from 'date-fns';
+import { Eye } from 'lucide-react';
+import { EyeOff } from 'lucide-react';
+import ToastNotification from "@/app_components/toast-notification";
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-type PingDataMap = {
-  pingResult: PingResult;
-  unread: boolean;
-};
+
 export const websocketUrl = "ws://localhost:8081/chat/localhost";
+export const MAX_LOCAL_STORAGE_SIZE_MB = 300; 
 
 export const socket = new WebSocket(websocketUrl);
 
 async function pingD(
-  setNotification: (data: PingDataMap) => void,
   setNotificationCount: (count: number) => void,
-  isNotificationPanelOpen: () => boolean
+  setNotifications: (notifications: PingDataMap[]) => void,
+  setPingResult:(pingResult : PingResult) => void
 ): Promise<() => void> {
   if (!websocketUrl) {
     console.error("WebSocket URL is not defined in the environment variables");
@@ -28,30 +38,31 @@ async function pingD(
   }
 
   socket.onmessage = (event: MessageEvent) => {
-    console.log({ isNotificationPanelOpen });
     try {
       const data: PingResult = JSON.parse(event.data);
+      setPingResult(data);
       const notificationData: PingDataMap = {
         pingResult: data,
         unread: true,
       };
       const savedPingData = localStorage.getItem("pingData");
-      const parsedPingData: PingDataMap[] = savedPingData
+      let parsedPingData: PingDataMap[] = savedPingData
         ? JSON.parse(savedPingData)
         : [];
 
+        if(parsedPingData.length > MAX_LOCAL_STORAGE_SIZE_MB){
+          parsedPingData = [];
+        }
+
       const updatedData = [...parsedPingData, notificationData];
 
-      localStorage.setItem("pingData", JSON.stringify(updatedData));
-      console.log({ isNotificationPanelOpen });
+      
 
-      if (!isNotificationPanelOpen()) {
-        console.log({ isNotificationPanelOpen });
-        setNotification(notificationData);
-        setNotificationCount(updatedData.filter((data) => data.unread).length);
-      }
+      localStorage.setItem("pingData", JSON.stringify(updatedData));
+      setNotifications(updatedData);
+      setNotificationCount(updatedData.filter((data) => data.unread).length);
     } catch (error) {
-      console.info("not a vaild json");
+      console.info("not a valid JSON");
     }
   };
 
@@ -69,10 +80,11 @@ async function pingD(
 }
 
 export function NotificationBell() {
-  const [notification, setNotification] = useState<PingDataMap | null>(null);
+  const [notifications, setNotifications] = useState<PingDataMap[]>([]);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [isHovered, setIsHovered] = useState(false);
-  const [isPanelOpen, setIsPanelOpen] = useState(false); // New state variable
+  const [watchList,setWatchList] = useState<string[]>(JSON.parse(localStorage.getItem("watchList") || "[]"))
+  const [pingResult,setPingResult] = useState<PingResult>();
 
   const resetNotificationCount = () => {
     const savedPingData = localStorage.getItem("pingData");
@@ -83,6 +95,7 @@ export function NotificationBell() {
       ...data,
       unread: false,
     }));
+    setNotifications(updatedData);
     localStorage.setItem("pingData", JSON.stringify(updatedData));
     setNotificationCount(0);
   };
@@ -115,17 +128,80 @@ export function NotificationBell() {
     return num.toString();
   }
 
+  const addToWathList = (ipAddress:string) => {
+    let watchList: string[] = JSON.parse(localStorage.getItem("watchList") || "[]");
+    // Add ipAddress to watchList if it's not already present
+    if (!watchList.includes(ipAddress)) {
+      const updatedWatchlist = [...watchList,ipAddress];
+
+      setWatchList(updatedWatchlist);
+      localStorage.setItem("watchList",JSON.stringify(updatedWatchlist))
+  }
+  }
+
+  const removeFromWatchList = (ipAddress:string) => {
+    let watchList: string[] = JSON.parse(localStorage.getItem("watchList") || "[]");
+    // Add ipAddress to watchList if it's not already present
+    if (watchList.includes(ipAddress)) {
+    
+    // Filter out the ipAddress from watchList
+    watchList = watchList.filter(item => item !== ipAddress);
+      
+      setWatchList(watchList);
+      localStorage.setItem("watchList",JSON.stringify(watchList))
+  }
+  }
+
+
+  const isIpInwatchList = (ipAddress:string) =>{
+    if(watchList.includes(ipAddress)){
+      return  <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+        <EyeOff onClick={()=>removeFromWatchList(ipAddress)} className="text-muted hover:text-black  "/>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p> 
+            Remove from watch list          
+          </p>
+        </TooltipContent>
+      </Tooltip>
+      </TooltipProvider>
+     
+    }else{
+      return  <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+        <Eye onClick={()=>addToWathList(ipAddress)} className="text-muted-foreground hover:text-black "/>
+        </TooltipTrigger>
+        <TooltipContent >
+          <p> 
+            Add to watch list          
+          </p>
+        </TooltipContent>
+      </Tooltip>
+      </TooltipProvider>
+    }
+  }
+
+  const clearNotifications = () => {
+    localStorage.removeItem("pingData"); // Clear localStorage
+    setNotifications([]);
+    setNotificationCount(0);
+  };
+
+  const formatDateIntoTimeAgo = (dateStr: string) =>{
+    const date = new Date(dateStr);
+    return formatDistanceToNowStrict(date, { addSuffix: false }) + " ago";
+  }
+
   const showNotificationData = () => {
-    const savedPingData = localStorage.getItem("pingData");
-    const parsedPingData: PingDataMap[] = savedPingData
-      ? JSON.parse(savedPingData)
-      : [];
-    return parsedPingData
+    return notifications
+      
       .sort((a, b) => {
         if (a.unread !== b.unread) {
           return a.unread ? -1 : 1; // Sort unread notifications first
         } else if (a.unread && b.unread) {
-          // Sort by createdAt if both are unread
           return (
             new Date(b.pingResult.pingStartTime).getTime() -
             new Date(a.pingResult.pingStartTime).getTime()
@@ -134,13 +210,44 @@ export function NotificationBell() {
           return 0;
         }
       })
-      .map((pingD, index) => (
-        <div key={index}>
-          <div>
-            {pingD.pingResult.ipAddress} <br /> {pingD.pingResult.pingStartTime}{" "}
-            <br /> {pingD.unread.toString()}{" "}
+      .map( (pingD, index) => (
+        <div key={index} className="">
+          <div className="p-4 border-b size-full hover:bg-muted flex flex-row w-full h-[100px] justify-center items-center" >
+          <i className='bx bxs-circle text-center basis-1/12 text-[5px] text-primary'> </i>
+          <div className="basis-11/12">
+          <blockquote className=" text-sm">
+            Pinged  <span className="italic hover:underline text-blue-400">{(pingD).pingResult.ipAddress}</span>{" "}
+            <span className="italic">packet size:{pingD.pingResult.packetSize}</span>{" "}
+            <span className="italic">packet loss:{pingD.pingResult.packetLossRate}</span>{" "}
+            <span className="italic">latency:{pingD.pingResult.rrtAvg}</span>
+
+            <br />
+            <br /> <span className="text-xs">{formatDateIntoTimeAgo(pingD.pingResult.pingStartTime)}</span>
+
+          </blockquote>
+           
+            
           </div>
-          <Separator className="my-2" />
+          <div className="basis-1/12 flex flex-row">
+          
+            <span className="basis-1/2 text-xs cursor-pointer ">
+            {/* <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                <Eye onClick={()=>addToWathList(pingD.pingResult.ipAddress)}/>
+                </TooltipTrigger>
+                <TooltipContent >
+                  <p> 
+                    Add to watch list          
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+              </TooltipProvider> */}
+              {isIpInwatchList(pingD.pingResult.ipAddress)}
+           </span>
+            {/* <span className="basis-1/2 text-sm">mark</span> */}
+          </div>
+          </div>
         </div>
       ));
   };
@@ -148,7 +255,7 @@ export function NotificationBell() {
   useEffect(() => {
     let cleanup: () => void | undefined;
 
-    pingD(setNotification, setNotificationCount, () => isPanelOpen)
+    pingD(setNotificationCount, setNotifications,setPingResult)
       .then((cleanUpFunc) => {
         cleanup = cleanUpFunc;
       })
@@ -166,36 +273,57 @@ export function NotificationBell() {
     const parsedPingData: PingDataMap[] = savedPingData
       ? JSON.parse(savedPingData)
       : [];
-    const unreadCount = parsedPingData.filter((data) => data.unread).length;
-    setNotificationCount(unreadCount);
+    setNotifications(parsedPingData);
+    setNotificationCount(parsedPingData.filter((data) => data.unread).length);
   }, []);
 
   return (
     <div className="relative">
-      <Popover onOpenChange={(open) => setIsPanelOpen(open)}>
+     <ToastNotification pingR={pingResult} watchList={watchList}/>
+
+      <Popover>
         <PopoverTrigger>
           <i
-            onClick={() => resetNotificationCount()}
+            // onClick={() => resetNotificationCount()}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             className={`bx ${
               isHovered ? "bxs-bell" : "bx-bell"
-            } transition ease-in-out text-3xl relative `}
+            } text-3xl relative `}
           ></i>
           {showBadge(notificationCount)}
         </PopoverTrigger>
         <PopoverContent
+         onOpenAutoFocus={(e) => {
+          e.preventDefault(); 
+        }}
           className="mt-2 ms-5 xs:w-[350px] md:w-[480px] p-0"
           align="end"
         >
-          <ScrollArea className="h-[600px] w-full rounded-md border">
-            <div className="sticky top-0 bg-opacity-95 backdrop-blur-sm z-10 flex ">
-              <h3>Notifications</h3>
-              <i data-lucide="trash-2"></i>
-              </div>
-            <Separator className="my-2" />
-
-            <div>{showNotificationData()}</div>
+          <div className="sticky top-0 flex justify-between p-5">
+            <h3>Notifications</h3>
+            <h5
+              className="italic hover:underline text-blue-400 text-sm"
+              onClick={() => resetNotificationCount()}
+            >
+              Mark all as read
+            </h5>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <i
+                    className="bx bx-trash text-2xl cursor-pointer"
+                    onClick={() => clearNotifications()}
+                  ></i>
+                </TooltipTrigger>
+                <TooltipContent >
+                  <p>Clear All </p>
+                </TooltipContent>
+              </Tooltip>
+              </TooltipProvider>
+          </div>
+          <ScrollArea className="h-[600px] w-full border">
+            <div>{notifications && showNotificationData()}</div>
           </ScrollArea>
         </PopoverContent>
       </Popover>

@@ -147,6 +147,12 @@ public class PingService {
                 jsonObject.put("rrtAvg", avg);
                 jsonObject.put("rrtMax", max);
                 pingResult.setLatency(avg);
+            } else {
+                jsonObject.put("rrtMin", 0.0);
+                jsonObject.put("rrtAvg", 0.0);
+                jsonObject.put("rrtMax", 0.0);
+                jsonObject.put("rrtMdev", 0.0);
+                pingResult.setLatency(0.0);
             }
             if (line.contains("Packets:")) {
                 String[] parts = line.split(",\\s+");
@@ -158,6 +164,7 @@ public class PingService {
                 double packetLossRate = parseToDouble(packetLossStr);
                 jsonObject.put("packetsSent", packetsSent);
                 jsonObject.put("packetsReceived", packetsReceived);
+                jsonObject.put("packetLossRate",packetLossRate);
                 pingResult.setPacketLossRate(packetLossRate);
             }
         });
@@ -209,6 +216,12 @@ public class PingService {
                 jsonObject.put("rrtMdev", mdev);
                 pingResult.setLatency(avg);
 
+            }else {
+                jsonObject.put("rrtMin", 0.0);
+                jsonObject.put("rrtAvg", 0.0);
+                jsonObject.put("rrtMax", 0.0);
+                jsonObject.put("rrtMdev", 0.0);
+                pingResult.setLatency(0.0);
             }
             if (line.contains("packet loss")) {
                 String[] parts = line.split(", ");
@@ -226,6 +239,7 @@ public class PingService {
                 double  packetLossRate = parseToDouble(packetLossParts[0].replaceAll("%", ""));
                 jsonObject.put("packetsSent",packetsSent);
                 jsonObject.put("packetsReceived",packetsReceived);
+                jsonObject.put("packetLossRate",packetLossRate);
                 pingResult.setPacketLossRate(packetLossRate);
 
             }

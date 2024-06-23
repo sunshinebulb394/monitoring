@@ -3,7 +3,7 @@
 
 import * as zed from "zod";
 import {dateRangeSchema} from "@/app_components/forms/dashboard-date-picker";
-import { UUID } from "crypto";
+import { formatDistanceToNow } from 'date-fns';
 
 interface ResponseObj {
     message: string,
@@ -19,18 +19,8 @@ interface StatsDto{
 
 }
 
-export type PingResult = {
-  id: UUID;
-  ipAddress: string;
-  pingStartTime: string;
-  packetSize: number;
-  packetsSent: number;
-  packetsReceived: number;
-  rrtMin: number;
-  rrtAvg: number;
-  rrtMax: number;
-  rrtMdev: number;
-}
+
+
   
 export async function getDailyAvgLatencyStats(formData : FormData) {
     const defaultFromDate = new Date();
