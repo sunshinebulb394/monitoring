@@ -279,8 +279,8 @@ export function NotificationBell() {
 
   return (
     <div className="relative">
-     <ToastNotification pingR={pingResult} watchList={watchList}/>
-
+     <ToastNotification pingR={pingResult} watchList={watchList}/> 
+    
       <Popover>
         <PopoverTrigger>
           <i
