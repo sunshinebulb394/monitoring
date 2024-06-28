@@ -1,0 +1,19 @@
+ .search {
+    border: 2px solid rgb(138, 138, 143);
+
+}
+
+.search input{
+    border: none;
+    outline: none;
+}
+
+
+.focused {
+    border: 2px solid rgb(138, 138, 143); /* Change border color as needed */
+  }
+  
+  .unfocused {
+    border: 2px solid transparent; /* Or whatever initial border style you want */
+  }
+  
