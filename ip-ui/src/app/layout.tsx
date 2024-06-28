@@ -35,14 +35,14 @@ export default function RootLayout({
         >
           <div className="dashboard-container ">
 
-            <div className="navbar  ">
+            <div className="navbar  border-b">
               <Navbar />
             </div>
-
-            <Separator />
-            <div className="breadcrumb flex items-center ps-5 ">
-              <Breadrumb />
+            {/* <div className="">
+              <Breadrumb  />
             </div>
+            */}
+
 
             <div className="content p-2">{children}</div>
           </div>
