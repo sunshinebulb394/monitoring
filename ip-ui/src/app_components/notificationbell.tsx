@@ -83,7 +83,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<PingDataMap[]>([]);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [isHovered, setIsHovered] = useState(false);
-  const [watchList,setWatchList] = useState<string[]>(JSON.parse(localStorage.getItem("watchList") || "[]"))
+  const [watchList,setWatchList] = useState<string[]>(JSON.parse(localStorage.getItem("watchList") || JSON.parse("[]")))
   const [pingResult,setPingResult] = useState<PingResult>();
 
   const resetNotificationCount = () => {

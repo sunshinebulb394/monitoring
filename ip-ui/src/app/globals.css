@@ -73,11 +73,12 @@
 }
 
 .content{
-    height: calc(100vh - 15vh);
+    height: calc(100vh - 10vh);
     width: inherit;
 }
 
-.breadcrumb{
+
+/* .breadcrumb{
    height: 5vh;
    width: 100vw;
-}
+} */
