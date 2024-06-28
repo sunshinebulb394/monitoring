@@ -25,9 +25,7 @@ import org.quartz.impl.StdSchedulerFactory;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 /**
  *
@@ -118,8 +116,20 @@ public class Config {
     @Produces
     @Named("pingExecutor")
     public ExecutorService produceExecutorService() {
-        return Executors.newFixedThreadPool(700, new CustomThreadFactory("PING"));
+//        return Executors.newFixedThreadPool(500, new CustomThreadFactory("PING"));
+        int corePoolSize = 400;  // Set your desired core pool size
+        int maximumPoolSize = 700;  // Set your desired maximum pool size
+        long keepAliveTime = 60L;  // Keep-alive time for idle threads
+        TimeUnit unit = TimeUnit.SECONDS;
 
+        return new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                unit,
+                new LinkedBlockingQueue<Runnable>(),
+                new CustomThreadFactory("PING")
+        );
     }
 
     @Produces

@@ -92,32 +92,55 @@ public class PingService {
         }
         Multi.createFrom()
                 .iterable(ipObjList)
-                        .onItem()
+                .onItem()
                 .invoke(ip -> pingExecutor.submit(() -> {
-            try {
-                pingIp(ip);
-            } catch (IOException e) {
-                log.error("Error pinging IP {}: {}", ip.getIpAddress(), e.getMessage());
-            }
-        })).subscribe().with(ipObj -> log.debug("pinging ip {}", ipObj.getIpAddress()));
-        
+                    try {
+                        pingIp(ip);
+                    } catch (IOException | InterruptedException e) {
+                        log.error("Error pinging IP {}: {}", ip.getIpAddress(), e.getMessage());
+                    }
+                 }))
+//                .onCompletion()
+//                .invoke(() -> {
+//                    log.info("All ping tasks submitted, shutting down executor.");
+//                    pingExecutor.shutdown();
+//                    try {
+//                        if (!pingExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
+//                            pingExecutor.shutdownNow();
+//                            if (!pingExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
+//                                log.error("Executor did not terminate");
+//                            }
+//                        }
+//                    } catch (InterruptedException e) {
+//                        log.error("Shutdown interrupted, forcing shutdown");
+//                        pingExecutor.shutdownNow();
+//                        Thread.currentThread().interrupt();
+//                    }
+//                })
+                .subscribe().with(ipObj -> log.debug("pinging ip {}", ipObj.getIpAddress()));
     }
 
-    private void pingIp(IpObj ip) throws IOException {
+    private void pingIp(IpObj ip) throws IOException, InterruptedException {
         ProcessBuilder processBuilder;
 
         if(OS.contains("windows")){
              processBuilder = new ProcessBuilder("ping", ip.getIpAddress(), WindowsPingCommands.count, countSize,WindowsPingCommands.packetSize,packetSize);
             var startTime = OffsetDateTime.now();
             Process process = processBuilder.start();
+//            boolean finished = process.waitFor(1000, TimeUnit.MILLISECONDS);
             var endTime = OffsetDateTime.now();
             buildWindowsPingResults(process,ip,startTime,endTime);
+
+
+
         } else if (OS.contains("linux") || OS.contains("mac") || OS.contains("ubuntu")) {
             processBuilder = new ProcessBuilder("ping", ip.getIpAddress(), LinuxApplePingCommands.count, countSize,LinuxApplePingCommands.packetSize,packetSize);
             var startTime = OffsetDateTime.now();
             Process process = processBuilder.start();
+//            boolean finished = process.waitFor(1000, TimeUnit.MILLISECONDS);
             var endTime = OffsetDateTime.now();
             buildLinuxApplePingResults(process,ip,startTime,endTime);
+
         }else {
             log.warn("Unsupported OS: {}", OS);
             throw new RuntimeException("Unsupported OS: " + OS);

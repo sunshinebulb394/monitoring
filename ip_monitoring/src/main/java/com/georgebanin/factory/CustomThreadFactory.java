@@ -21,6 +21,14 @@ public class CustomThreadFactory implements ThreadFactory {
     public Thread newThread(Runnable r) {
         Thread thread = defaultFactory.newThread(r);
         thread.setName(prefix + "-thread-" + threadNumber.getAndIncrement());
+        if (thread.isDaemon()) {
+            thread.setDaemon(false);
+        }
+        if (thread.getPriority() != Thread.NORM_PRIORITY) {
+            thread.setPriority(Thread.NORM_PRIORITY);
+        }
         return thread;
     }
+
+
 }

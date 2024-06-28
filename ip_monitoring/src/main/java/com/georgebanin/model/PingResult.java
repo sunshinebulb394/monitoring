@@ -18,6 +18,7 @@ import java.util.UUID;
 public class PingResult implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+    @Builder.Default
     private UUID id  = UUID.randomUUID();
     private String ipAddress;
     private OffsetDateTime pingStartTime;
