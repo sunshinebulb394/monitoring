@@ -1,5 +1,0 @@
-CREATE TABLE IF NOT EXISTS ping_result_may2024 PARTITION OF ping.ping_result
-    FOR VALUES FROM ('2024-05-01') TO ('2024-05-31');
-
-CREATE TABLE IF NOT EXISTS ping_result_june2024 PARTITION OF ping.ping_result
-    FOR VALUES FROM ('2024-06-01') TO ('2024-06-30');
