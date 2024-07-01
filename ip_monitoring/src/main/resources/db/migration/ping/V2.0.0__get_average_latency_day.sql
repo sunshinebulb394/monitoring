@@ -1,11 +1,8 @@
-CREATE OR REPLACE FUNCTION get_average_latency_by_hour(
+CREATE OR REPLACE FUNCTION get_average_latency_by_day(
     IN start_date TIMESTAMP,
     IN end_date TIMESTAMP
 )
-    RETURNS TABLE(
-                     hour numeric,
-                     avg_value numeric  -- Assuming latency_ms is stored as FLOAT8, adjust if different
-                 )
+RETURNS TABLE(hour numeric,avg_value numeric)
 AS $$
 BEGIN
     RETURN QUERY
@@ -18,7 +15,7 @@ BEGIN
         )
         SELECT
             extract(hour from hours.hour) AS hour,
-            COALESCE(ROUND(AVG(pr.latency_ms)::NUMERIC, 2), 0) AS avg_value  -- Rounding and handling COALESCE
+            COALESCE(ROUND(AVG(pr.latency_ms)::NUMERIC, 2), 0) AS avg_value
         FROM
             hours
                 LEFT JOIN

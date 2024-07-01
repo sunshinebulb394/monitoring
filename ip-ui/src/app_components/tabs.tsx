@@ -14,11 +14,14 @@ import Chart from "@/app_components/chart";
 import './css/tabs.css';
 import DateRangePicker from "@/components/ui/daterangepicker";
 import DashboardDatePicker from "@/app_components/forms/dashboard-date-picker";
+import ChartContext from "./providers/chartcontext";
+import ChartProvider from "./providers/chartprovider";
 
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function TabsDemo() {
+  
 
 
 
@@ -30,6 +33,7 @@ export default function TabsDemo() {
           <TabsTrigger value="password" className="col-span-3 ">Password</TabsTrigger>
         </TabsList>
         <TabsContent value="account" className="grid xs:grid-rows-2 sm:grid-cols-3 gap-x-3 gap-y-2 row-span-11 border" >
+           <ChartProvider>
           <Card className="col-span-2 row-span-12">
             <CardContent className="p-1 m-0 h-full" >
             <Chart/>
@@ -52,6 +56,8 @@ export default function TabsDemo() {
 
           </Card>
 
+          </ChartProvider> 
+         
 
         </TabsContent>
       </Tabs>

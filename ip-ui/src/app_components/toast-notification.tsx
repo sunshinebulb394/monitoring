@@ -52,8 +52,8 @@ export function ToastNotification({ pingR, watchList }: ToastNotificationProps) 
     }
   }
 
-  console.log({ watchList })
-  console.log({ pingR })
+  // console.log({ watchList })
+  // console.log({ pingR })
 
   useEffect(() => {
     if (pingR && watchList?.includes(pingR.ipAddress)) {

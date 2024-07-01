@@ -30,6 +30,7 @@ public class FlywayMigration {
         }catch (FlywayValidateException ex){
             log.error("quarkus flyway migration failed");
             log.error(ex.getMessage(),ex);
+            throw new RuntimeException(ex);
         }
 
         try {
@@ -38,6 +39,8 @@ public class FlywayMigration {
         catch (FlywayValidateException ex){
             log.error("ping flyway migration failed");
             log.error(ex.getMessage(),ex);
+            throw new RuntimeException(ex);
+
         }
     }
 }

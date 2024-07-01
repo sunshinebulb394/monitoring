@@ -1,6 +1,7 @@
 "use client"
-import React from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import {useTheme} from "next-themes"
+import { DNA } from "react-loader-spinner"
 import {
     CategoryScale,
     Chart as ChartJS,
@@ -14,6 +15,7 @@ import {
 import {Line} from 'react-chartjs-2';
 
 import {faker} from '@faker-js/faker';
+import ChartContext from './providers/chartcontext';
 
 ChartJS.register(
     CategoryScale,
@@ -25,23 +27,31 @@ ChartJS.register(
     Legend
 );
 
+type ChartObj  = {
+    hour : string,
+    avg : string,
+}
 
 export default function Chart() {
+    const [loading, setLoading] = useState<boolean>(true);
+    const chartD: ChartObj[] = useContext(ChartContext) || [];
+    const [chartData, setChartData] = useState<ChartObj[]>([]);
+
+    useEffect(() => {
+        if (chartD.length > 0) {
+            setChartData(chartD);
+            setLoading(false);
+        }
+        console.log(chartD);
+    }, [chartD]);
+
+    useEffect(() => {
+     console.log(chartData)
+    }, [chartData]);
+
     const {theme} = useTheme();
 
-    const labels = ['January',
-        'February',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'August',
-        'September',
-        'October',
-        'November',
-        'December'];
-
+    
     const options= {
         elements:{
             point:{
@@ -103,10 +113,10 @@ export default function Chart() {
 
     const data = {
 
-        labels,
+        labels: chartData?.map(row => row.hour),
         datasets: [
             {
-                data: labels.map(() => faker.number.int({min: 0, max: 1000})),
+                data: chartData?.map(row => row.avg),
                 borderColor: theme == 'light' ? 'rgb(9, 9, 11)' : 'rgb(59, 130, 246)',
 
 
@@ -115,10 +125,27 @@ export default function Chart() {
         ],
     };
 
+    // useEffect(() => {
+    //     console.log(chartData);
+    // }, [chartData]); // Empty dependency array means this effect runs only once after mount
+
     return (
-        <div className=" p-0 m-0 h-full ">
-            <Line data={data} options={options}/>
+        <div className="p-0 m-0 h-full">
+      {loading ? (
+        <div className="flex items-center justify-center h-full">
+          <p><DNA
+        visible={true}
+        height="80"
+        width="80"
+        ariaLabel="dna-loading"
+        wrapperStyle={{}}
+        wrapperClass="dna-wrapper"
+  /></p>
         </div>
+      ) : (
+        <Line data={data} options={options} />
+      )}
+    </div>
     );
 };
 

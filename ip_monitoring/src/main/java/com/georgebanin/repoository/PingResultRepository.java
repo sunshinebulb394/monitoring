@@ -103,7 +103,7 @@ public class PingResultRepository {
         tuple.addOffsetDateTime(fromDate);
         tuple.addOffsetDateTime(toDate);
 
-        return     pingSqlClient.preparedQuery("SELECT * FROM get_average_latency_by_hour($1,$2)")
+        return     pingSqlClient.preparedQuery("SELECT * FROM ping.get_average_latency_by_day($1,$2)")
                 .execute(tuple)
                 .onItem()
                 .transformToMulti(RowSet::toMulti)
@@ -112,6 +112,27 @@ public class PingResultRepository {
 
                     map.put("hour", row.getInteger("hour"));
                     map.put("avg", row.getDouble("avg_value"));
+                    return map;
+                });
+    }
+
+    public Multi<HashMap<String,Object>> getAverageLatencyPerWeek(OffsetDateTime fromDate, OffsetDateTime toDate){
+        Tuple tuple = Tuple.tuple();
+        tuple.addOffsetDateTime(fromDate);
+        tuple.addOffsetDateTime(toDate);
+
+        return     pingSqlClient.preparedQuery("SELECT * FROM ping.get_average_latency_by_week($1,$2)")
+                .execute(tuple)
+                .onItem()
+                .transformToMulti(RowSet::toMulti)
+                .map(row -> {
+                    HashMap<String, Object> map = new HashMap<>(); // Create a new HashMap for each row
+
+                    map.put("eachDay", row.getLocalDate("each_day"));
+                    map.put("avg", row.getDouble("avg_value"));
+                    map.put("dayNumber", row.getInteger("day_number"));
+                    map.put("dayName", row.getString("day_name"));
+
                     return map;
                 });
     }

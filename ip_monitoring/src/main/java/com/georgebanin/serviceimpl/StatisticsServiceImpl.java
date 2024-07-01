@@ -48,9 +48,11 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .collect().asList()
                 .map(stats ->  ResponseDto.transformToResponse("Successfull",200,stats));
         }
-//        else if () {
-//
-//        }
+        if(isDateDiffOneWeek(fromDate,toDate)){
+            return pingResultRepository.getAverageLatencyPerWeek(fromDate,toDate)
+                    .collect().asList()
+                    .map(stats ->  ResponseDto.transformToResponse("Successfull",200,stats));
+        }
         return null;
     }
 
@@ -58,5 +60,11 @@ public class StatisticsServiceImpl implements StatisticsService {
         // Calculate the difference in days
         Period period = Period.between(fromDate.toLocalDate(), toDate.toLocalDate());
         return period.getDays() == 1;
+    }
+
+    private boolean isDateDiffOneWeek(OffsetDateTime fromDate, OffsetDateTime toDate) {
+        // Calculate the difference in days
+        Period period = Period.between(fromDate.toLocalDate(), toDate.toLocalDate());
+        return period.getDays() == 7;
     }
 }
