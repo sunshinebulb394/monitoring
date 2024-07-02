@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Form,
   FormControl,
@@ -32,19 +32,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 import { getDailyAvgLatencyStats } from "@/app/actions";
-import ChartContext from "../providers/chartcontext";
+import { ChartContext } from "../providers/chartprovider";
 
-// export const dateRangeSchema = zed.object({
-//     dateRange: zed.object({
-//         from: zed.date(),
-//         to: zed.date()
-//     })
-
-// })
-// .refine((data) => data.dateRange.from < data.dateRange.to, {
-//     path: ["dateRange"],
-//     message: "From date must be before to date",
-// });
 export const FormSchema = zed.object({
   selectDate: zed.string({
     required_error: "Please select an email to display.",
@@ -57,28 +46,23 @@ export default function DashboardDatePicker({
   const defaultFromDate = new Date();
   const defaultToDate = new Date();
   defaultFromDate.setDate(defaultToDate.getDate() - 1);
-  const [chartData,setChartData] = useState<any>();
-  // const form = useForm<zed.infer<typeof dateRangeSchema>>({
-  //     defaultValues: {
-  //         dateRange: {
-  //             from: defaultFromDate,
-  //             to: defaultToDate, 
-  //         },
-  //     },
-  // });
+  const { setChartData, setOption } = useContext(ChartContext);
+
+
 
   const form = useForm<zed.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
 
   const handleSubmit = async (values: zed.infer<typeof FormSchema>) => {
-   return await getDailyAvgLatencyStats(values.selectDate).then(res => setChartData(res));
-    
+    const data = await getDailyAvgLatencyStats(values.selectDate);
+    setChartData(data);
+    setOption(values);
   };
 
 
   return (
-   <ChartContext.Provider value={chartData}>
+  //  <ChartContext.Provider value={chartData}>
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
@@ -98,8 +82,8 @@ export default function DashboardDatePicker({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
+                <SelectItem value="1">Last day</SelectItem>
                   <SelectItem value="0">Current day </SelectItem>
-                  <SelectItem value="1">Last day</SelectItem>
                   <SelectItem value="2">Last week</SelectItem>
                   <SelectItem value="3">Last Month</SelectItem>
                 </SelectContent>
@@ -110,7 +94,7 @@ export default function DashboardDatePicker({
         <Button type="submit">Submit</Button>
       </form>
     </Form>
-   </ChartContext.Provider>
+  //  </ChartContext.Provider>
 
   );
 }

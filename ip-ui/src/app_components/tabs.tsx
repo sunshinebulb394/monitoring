@@ -14,8 +14,8 @@ import Chart from "@/app_components/chart";
 import './css/tabs.css';
 import DateRangePicker from "@/components/ui/daterangepicker";
 import DashboardDatePicker from "@/app_components/forms/dashboard-date-picker";
-import ChartContext from "./providers/chartcontext";
 import ChartProvider from "./providers/chartprovider";
+
 
 
 ChartJS.register(ArcElement, Tooltip, Legend);

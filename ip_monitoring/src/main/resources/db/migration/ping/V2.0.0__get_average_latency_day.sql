@@ -24,6 +24,6 @@ BEGIN
         GROUP BY
             hours.hour
         ORDER BY
-            hours.hour;
+            hour;
 END;
 $$ LANGUAGE plpgsql;

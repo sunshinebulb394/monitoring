@@ -15,7 +15,7 @@ import {
 import {Line} from 'react-chartjs-2';
 
 import {faker} from '@faker-js/faker';
-import ChartContext from './providers/chartcontext';
+import { ChartContext,ChartObj } from './providers/chartprovider';
 
 ChartJS.register(
     CategoryScale,
@@ -33,20 +33,13 @@ type ChartObj  = {
 }
 
 export default function Chart() {
+    const { chartData } = useContext(ChartContext);
     const [loading, setLoading] = useState<boolean>(true);
-    const chartD: ChartObj[] = useContext(ChartContext) || [];
-    const [chartData, setChartData] = useState<ChartObj[]>([]);
-
+  
     useEffect(() => {
-        if (chartD.length > 0) {
-            setChartData(chartD);
-            setLoading(false);
-        }
-        console.log(chartD);
-    }, [chartD]);
-
-    useEffect(() => {
-     console.log(chartData)
+      if (chartData.length > 0) {
+        setLoading(false);
+      }
     }, [chartData]);
 
     const {theme} = useTheme();
@@ -113,7 +106,7 @@ export default function Chart() {
 
     const data = {
 
-        labels: chartData?.map(row => row.hour),
+        labels: chartData?.map(row : chartData => row.hour),
         datasets: [
             {
                 data: chartData?.map(row => row.avg),

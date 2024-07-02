@@ -18,6 +18,7 @@ BEGIN
                EXTRACT(ISODOW FROM days.day) AS day_number,
                COALESCE(ROUND(AVG(pr.latency_ms)::NUMERIC, 2), 0) AS avg_value
         FROM days left join ping.ping_result pr on pr.created_at::DATE = days.day::DATE
-        group by days.day;
+        group by days.day
+        order by day_number;
 END;
 $$ LANGUAGE plpgsql;

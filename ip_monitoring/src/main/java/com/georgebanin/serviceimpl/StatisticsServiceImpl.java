@@ -59,7 +59,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     private boolean isDateDiffOneDay(OffsetDateTime fromDate, OffsetDateTime toDate) {
         // Calculate the difference in days
         Period period = Period.between(fromDate.toLocalDate(), toDate.toLocalDate());
-        return period.getDays() == 1;
+        return period.getDays() <= 1;
     }
 
     private boolean isDateDiffOneWeek(OffsetDateTime fromDate, OffsetDateTime toDate) {
