@@ -25,7 +25,7 @@ export async function getDailyAvgLatencyStats(formData : string) {
     
     console.log(option)
     if (Number(option) == 0) {
-        console.log("hit first option");
+        console.log("hit 0 option");
         // Set 'from' to the start of the last day
         from.setDate(from.getDate() - 1);
         from.setHours(0, 0, 0);  // Start of the day: 00:00:00.000
@@ -44,7 +44,7 @@ export async function getDailyAvgLatencyStats(formData : string) {
 
     }
     if (Number(option) == 1) {
-        console.log("hit 0 option");
+        console.log("hit 1 option");
         // Set 'from' to the start of the last day
         from.setDate(from.getDate());
         from.setHours(0, 0, 0);  // Start of the day: 00:00:00.000
@@ -100,4 +100,3 @@ async function sendRequest(data: any): Promise<any> {
     console.log(jsonData);
     return jsonData.data;
 }
-

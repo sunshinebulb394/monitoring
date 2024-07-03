@@ -11,25 +11,26 @@ interface ChartContextProps {
     chartData: ChartObj[];
     setChartData: React.Dispatch<React.SetStateAction<ChartObj[]>>;
     setOption: React.Dispatch<React.SetStateAction<string>>;
+    option: string;
 }
 
 export const ChartContext = createContext<ChartContextProps | null>(null);
 
 const ChartProvider = ({ children }) => {
     const [chartData, setChartData] = useState<ChartObj[]>([]);
-    const [option, setOption] = useState<string>("1");
+    const [option, setOption] = useState<string>("0");
 
     useEffect(() => {
-        getDailyAvgLatencyStats("1")
+        getDailyAvgLatencyStats("0")
             .then(data => {
                 setChartData(data);
-                setOption("1");
+                setOption("0");
             })
             .catch(error => console.error("Error fetching chart data:", error));
     }, []);
 
     return (
-        <ChartContext.Provider value={{ chartData, setChartData, setOption }}>
+        <ChartContext.Provider value={{ chartData, setChartData ,option ,setOption}}>
             {children}
         </ChartContext.Provider>
     );

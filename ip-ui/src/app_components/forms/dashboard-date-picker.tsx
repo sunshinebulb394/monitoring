@@ -82,8 +82,8 @@ export default function DashboardDatePicker({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                <SelectItem value="1">Last day</SelectItem>
-                  <SelectItem value="0">Current day </SelectItem>
+                <SelectItem value="0">Last day</SelectItem>
+                  <SelectItem value="1">Current day </SelectItem>
                   <SelectItem value="2">Last week</SelectItem>
                   <SelectItem value="3">Last Month</SelectItem>
                 </SelectContent>
