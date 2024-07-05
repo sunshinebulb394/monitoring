@@ -57,7 +57,7 @@ export default function DashboardDatePicker({
   const handleSubmit = async (values: zed.infer<typeof FormSchema>) => {
     const data = await getDailyAvgLatencyStats(values.selectDate);
     setChartData(data);
-    setOption(values);
+    setOption(values.selectDate);
   };
 
 

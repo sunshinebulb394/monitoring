@@ -38,6 +38,24 @@ export default function Chart() {
   const { chartData,option } = useContext(ChartContext);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const setLabelName = (opt : string,row) => {
+    if (opt == "0"){
+      return row.hour
+  }
+  if (opt == "1"){
+    return row.hour
+
+  }
+  if (opt == "2"){
+      return row.dayName
+
+  }
+  if (opt == "4"){
+    return row.dayName
+
+  }
+  }
+
   const setTitleName = (opt :string) => {
     if (opt == "0"){
         return "Last Day"
@@ -47,6 +65,7 @@ export default function Chart() {
     }
     if (opt == "2"){
         return "Last Week"
+
     }
     if (opt == "4"){
         return "Current Week"
@@ -58,7 +77,7 @@ export default function Chart() {
       setLoading(false);
     }
     console.log(chartData);
-    console.log(option.selectDate);
+    console.log(option);
 
 
   }, [chartData,option]);
@@ -131,7 +150,7 @@ export default function Chart() {
       },
       title : {
         display: true,
-        text: `Avg Latency for ${setTitleName(option.selectDate)}`,
+        text: `Avg Latency for ${setTitleName(option)}`,
         align: 'center'
       }
     },
@@ -139,7 +158,7 @@ export default function Chart() {
   };
 
   const data = {
-    labels: chartData?.map((row) => row.hour),
+    labels: chartData?.map((row) => setLabelName(option,row)),
     datasets: [
       {
         data: chartData?.map((row) => row.avg),
