@@ -16,7 +16,9 @@ interface ChartContextProps {
 
 export const ChartContext = createContext<ChartContextProps | null>(null);
 
-const ChartProvider = ({ children }) => {
+const ChartProvider = ({ children }:Readonly<{
+    children: React.ReactNode;
+  }>) => {
     const [chartData, setChartData] = useState<ChartObj[]>([]);
     const [option, setOption] = useState<string>("0");
 

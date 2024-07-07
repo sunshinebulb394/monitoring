@@ -4,6 +4,7 @@ import com.georgebanin.dto.PingSettingsDto;
 import com.georgebanin.dto.ResponseDto;
 import com.georgebanin.exceptions.ObjectNotValidException;
 import com.georgebanin.service.PingSettingsService;
+import com.georgebanin.serviceimpl.PingService;
 import io.quarkus.vertx.web.Body;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RouteBase;
@@ -19,6 +20,8 @@ public class PingSettingsController {
     @Inject
     PingSettingsService pingSettingsService;
 
+
+
     @Route(path = "/save", methods = Route.HttpMethod.POST,produces = "application/json")
     public Uni<ResponseDto> savePingSetting(@Body PingSettingsDto pingSettingsDto) throws ObjectNotValidException {
         return pingSettingsService.savePingSettings(pingSettingsDto);
@@ -28,5 +31,7 @@ public class PingSettingsController {
     public Uni<ResponseDto> getAllPingSettings() {
         return pingSettingsService.getAllPingSettings();
     }
+
+
 
 }

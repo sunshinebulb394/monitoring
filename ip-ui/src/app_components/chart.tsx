@@ -15,7 +15,7 @@ import {
 import { Line } from "react-chartjs-2";
 
 import { faker } from "@faker-js/faker";
-import { ChartContext, ChartObj } from "./providers/chartprovider";
+import { ChartContext } from "./providers/chartprovider";
 import { min } from "date-fns";
 import { title } from "process";
 
@@ -35,10 +35,16 @@ type ChartObj = {
 };
 
 export default function Chart() {
-  const { chartData,option } = useContext(ChartContext);
+  const chartContext = useContext(ChartContext);
+
+  if (!chartContext) {
+    throw new Error("Chart component must be used within a ChartProvider");
+  }
+
+  const { chartData, option } = chartContext;
   const [loading, setLoading] = useState<boolean>(true);
 
-  const setLabelName = (opt : string,row) => {
+  const setLabelName = (opt : string,row : any) => {
     if (opt == "0"){
       return row.hour
   }
@@ -177,15 +183,17 @@ export default function Chart() {
         <div className="flex items-center justify-center h-full">
           <p>
             <InfinitySpin
-              visible={true}
+              // visible={true}
               width="200"
               color={"light" ? "rgb(9, 9, 11)" : "rgb(59, 130, 246)"}
-              ariaLabel="infinity-spin-loading"
+              // ariaLabel="infinity-spin-loading"
             />
           </p>
         </div>
       ) : (
-        <Line data={data} options={options} />
+        <Line data={data} 
+        // options={options} 
+        />
       )}
     </div>
   );

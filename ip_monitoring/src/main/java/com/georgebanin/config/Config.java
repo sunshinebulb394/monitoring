@@ -127,7 +127,7 @@ public class Config {
                 maximumPoolSize,
                 keepAliveTime,
                 unit,
-                new LinkedBlockingQueue<>(),
+                new LinkedBlockingQueue<>(1000),
                 new CustomThreadFactory("PING")
         );
     }

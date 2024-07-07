@@ -46,7 +46,12 @@ export default function DashboardDatePicker({
   const defaultFromDate = new Date();
   const defaultToDate = new Date();
   defaultFromDate.setDate(defaultToDate.getDate() - 1);
-  const { setChartData, setOption } = useContext(ChartContext);
+  const chartContext = useContext(ChartContext);
+
+  if (!chartContext) {
+    throw new Error("Chart component must be used within a ChartProvider");
+  }
+  const { setChartData, setOption } = chartContext;
 
 
 
