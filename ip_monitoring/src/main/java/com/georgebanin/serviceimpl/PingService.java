@@ -1,6 +1,7 @@
 package com.georgebanin.serviceimpl;
 
 import com.georgebanin.model.IpObj;
+import com.georgebanin.model.PingResult;
 import com.georgebanin.repoository.IPModelRepository;
 import com.georgebanin.repoository.PingResultRepository;
 import com.georgebanin.repoository.PingSettingsRepository;
@@ -15,10 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @ApplicationScoped
 @Slf4j
@@ -38,6 +36,8 @@ public class PingService {
     ExecutorService pingExecutor;
     private String countSize = null;
     private String packetSize = null;
+
+//    private List<Callable<PingResult>> pingTasks = new ArrayList<>();
 
 
     public void ping(@Observes StartupEvent ev) {
@@ -78,6 +78,19 @@ public class PingService {
         Multi.createFrom()
                 .iterable(ipObjList)
                 .onItem()
+                .transform(PingTask::new)
+                .collect().asList()
+                .onItem()
+                .transform(Unchecked.function(pingTasks -> {
+                    try {
+                        return pingExecutor.invokeAll(pingTasks);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }))
+                .onItem()
+
+
                 .transform(
                         Unchecked.function(ipObj -> {
                             try {
