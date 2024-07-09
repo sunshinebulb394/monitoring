@@ -3,3 +3,9 @@ CREATE TABLE IF NOT EXISTS ping_result_may2024 PARTITION OF ping.ping_result
 
 CREATE TABLE IF NOT EXISTS ping_result_june2024 PARTITION OF ping.ping_result
     FOR VALUES FROM ('2024-06-01') TO ('2024-06-30');
+
+
+CREATE TABLE IF NOT EXISTS ping_result_july PARTITION OF ping.ping_result
+    FOR VALUES FROM ('2024-06-30') TO ('2024-07-31');
+
+

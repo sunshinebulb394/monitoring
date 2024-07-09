@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,7 +35,7 @@ public class PingTask implements Callable<PingResult> {
 
     @Override
     public PingResult call() throws Exception {
-//        log.info("Starting ping {}",ipObj.getIpAddress() );
+        log.info("Starting ping {}",ipObj.getIpAddress() );
         return pingIp(ipObj);
     }
 
@@ -42,17 +43,21 @@ public class PingTask implements Callable<PingResult> {
         ProcessBuilder processBuilder;
 
         if(OS.contains("windows")){
-            processBuilder = new ProcessBuilder("ping", ip.getIpAddress(), WindowsPingCommands.count, "-4");
+            processBuilder = new ProcessBuilder("ping", ip.getIpAddress(), WindowsPingCommands.count, "2");
             var startTime = OffsetDateTime.now();
             Process process = processBuilder.start();
-//            boolean finished = process.waitFor(1000, TimeUnit.MILLISECONDS);
+            boolean finished = process.waitFor(500, TimeUnit.MILLISECONDS);
+            if(!finished){
+                process.destroy();
+            }
+
             var endTime = OffsetDateTime.now();
-            buildWindowsPingResults(process,ip,startTime,endTime);
+           return buildWindowsPingResults(process,ip,startTime,endTime);
 
 
 
         } else if (OS.contains("linux") || OS.contains("mac") || OS.contains("ubuntu")) {
-            processBuilder = new ProcessBuilder("ping", ip.getIpAddress(), LinuxApplePingCommands.count, "-4");
+            processBuilder = new ProcessBuilder("ping", ip.getIpAddress(), LinuxApplePingCommands.count, "2");
             var startTime = OffsetDateTime.now();
             Process process = processBuilder.start();
 //            boolean finished = process.waitFor(1000, TimeUnit.MILLISECONDS);
@@ -65,7 +70,6 @@ public class PingTask implements Callable<PingResult> {
 
 //            throw new RuntimeException("Unsupported OS: " + OS);
         }
-        return null;
 
     }
 
@@ -148,7 +152,7 @@ public class PingTask implements Callable<PingResult> {
         return pingResult;
     }
 
-    private void buildWindowsPingResults(Process process, IpObj ip, OffsetDateTime startTime, OffsetDateTime endTime) throws IOException {
+    private PingResult buildWindowsPingResults(Process process, IpObj ip, OffsetDateTime startTime, OffsetDateTime endTime) throws IOException {
         Buffer buffer = Buffer.buffer(process.getInputStream().readAllBytes());
         String pingOutput = buffer.toString();
 
@@ -199,9 +203,7 @@ public class PingTask implements Callable<PingResult> {
 //        chatWebSocket.broadcast(jsonObject.toString());
 //
 //        savePingResultList(pingResult);
-
-
-
+        return pingResult;
 
     }
 

@@ -82,14 +82,12 @@ public class PingService {
                         Unchecked.function(ipObj -> {
                             try {
                                 var pingr = pingExecutor.submit(new PingTask(ipObj));
-
                                 return pingr.get();
                             } catch (InterruptedException e) {
                                 log.error(e.getMessage());
                             }
                             return null;
                         }))
-//                .runSubscriptionOn(pingExecutor)
                 .collect().asList().toMulti()
                 .invoke(savePingResultList -> {
                     log.info("Saving Ping Result: {}", savePingResultList.size());

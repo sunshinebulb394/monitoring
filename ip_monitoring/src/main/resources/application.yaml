@@ -5,7 +5,7 @@ quarkus:
     password: wonderful143
     jdbc: false
     reactive:
-      url: postgresql://localhost:5432/ip_analytics
+      url: postgresql://localhost:5432/
     quartz:
       db-kind: postgresql
       username: georgebanin

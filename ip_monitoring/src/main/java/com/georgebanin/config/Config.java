@@ -117,7 +117,7 @@ public class Config {
     @Named("pingExecutor")
     public ExecutorService produceExecutorService() {
 //        return Executors.newFixedThreadPool(500, new CustomThreadFactory("PING"));
-        int corePoolSize = 200;  // Set your desired core pool size
+        int corePoolSize = 300;  // Set your desired core pool size
         int maximumPoolSize = 400;  // Set your desired maximum pool size
         long keepAliveTime = 60L;  // Keep-alive time for idle threads
         TimeUnit unit = TimeUnit.SECONDS;
@@ -127,7 +127,7 @@ public class Config {
                 maximumPoolSize,
                 keepAliveTime,
                 unit,
-                new LinkedBlockingQueue<>(1000),
+                new LinkedBlockingQueue<>(100),
                 new CustomThreadFactory("PING")
         );
     }
