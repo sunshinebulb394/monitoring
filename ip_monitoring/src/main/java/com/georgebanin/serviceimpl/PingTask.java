@@ -34,7 +34,7 @@ public class PingTask implements Callable<PingResult> {
 
     @Override
     public PingResult call() throws Exception {
-//        log.info("Starting ping {}",ipObj.getIpAddress() );
+        log.info("Starting ping {}",ipObj.getIpAddress() );
         return pingIp(ipObj);
     }
 
@@ -52,7 +52,7 @@ public class PingTask implements Callable<PingResult> {
 
 
         } else if (OS.contains("linux") || OS.contains("mac") || OS.contains("ubuntu")) {
-            processBuilder = new ProcessBuilder("ping", ip.getIpAddress(), LinuxApplePingCommands.count, "-4");
+            processBuilder = new ProcessBuilder("ping", ip.getIpAddress(), LinuxApplePingCommands.count, "2");
             var startTime = OffsetDateTime.now();
             Process process = processBuilder.start();
 //            boolean finished = process.waitFor(1000, TimeUnit.MILLISECONDS);
