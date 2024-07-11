@@ -18,7 +18,7 @@ import java.util.concurrent.Callable;
 
 @Slf4j
 @RequiredArgsConstructor
-public class PingTask implements Callable<PingResult> {
+public class PingTask  {
 
     private IpObj ipObj;
 
@@ -32,9 +32,9 @@ public class PingTask implements Callable<PingResult> {
     ChatWebSocket chatWebSocket;
 
 
-    @Override
+
     public PingResult call() throws Exception {
-        log.info("Starting ping {}",ipObj.getIpAddress() );
+        log.debug("Starting ping {}",ipObj.getIpAddress() );
         return pingIp(ipObj);
     }
 

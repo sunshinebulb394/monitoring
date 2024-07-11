@@ -149,4 +149,30 @@ public class IPModelRepository {
 
 
 
+    public Uni<IpModel> update(IpModel ipModel) throws ObjectNotValidException {
+        Tuple tuple = Tuple.tuple();
+        tuple.addUUID(ipModel.getId());
+        tuple.addString(ipModel.getIpAddress());
+        tuple.addString(ipModel.getIpGroup());
+        tuple.addOffsetDateTime(OffsetDateTime.now());
+
+        return pingSqlClient.preparedQuery("UPDATE ping.ip_model set ip_address = $2,ip_group = $3,updated_at = $4 where id = $1 RETURNING id,ip_group,ip_address,updated_at")
+                .execute(tuple)
+                .onItem()
+                .transform(rowSet -> rowSet.iterator().next())
+                .onItem()
+                .transform((Unchecked.function(row -> {
+                    try {
+                        return fetchResults(row);
+                    } catch (IpModelException e) {
+                        log.error("error occured", e);
+                        throw new ObjectNotValidException(e.getMessage());
+                    }
+                })))
+                .onFailure().transform(Unchecked.function(throwable -> {
+                    // Throw the exception if the SQL query execution fails
+                    throw new ObjectNotValidException(throwable.getMessage());
+                }));
+    }
+
 }

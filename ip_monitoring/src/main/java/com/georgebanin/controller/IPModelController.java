@@ -15,6 +15,7 @@ import io.quarkus.vertx.web.RouteBase;
 
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.mutiny.core.buffer.Buffer;
 import jakarta.enterprise.context.RequestScoped;
@@ -25,6 +26,7 @@ import org.jboss.resteasy.reactive.RestForm;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -59,10 +61,10 @@ public class IPModelController {
     public Uni<?> addIp(@Body IpModelDto ipModelDto) throws ObjectNotValidException, IpModelException {
         return ipModelService.createIpModel(ipModelDto);
     }
-//
-//
-//    @Route(methods = Route.HttpMethod.GET,produces = "application/json")
-//    public Uni<?> findAll() {
-//        return null;
-//    }
+
+    @Route(path = "/update", methods = Route.HttpMethod.PUT,produces = "application/json",consumes = "application/json")
+    public Uni<?> updateIp(@Body JsonObject body) throws ObjectNotValidException, IpModelException {
+        return ipModelService.updateIpModel(body);
+    }
+
 }

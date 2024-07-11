@@ -1,22 +1,25 @@
 package com.georgebanin.serviceimpl;
 
 import com.georgebanin.model.IpObj;
-import com.georgebanin.model.PingResult;
 import com.georgebanin.repoository.IPModelRepository;
 import com.georgebanin.repoository.PingResultRepository;
 import com.georgebanin.repoository.PingSettingsRepository;
 import io.quarkus.runtime.StartupEvent;
 import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.unchecked.Unchecked;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @ApplicationScoped
 @Slf4j
@@ -24,13 +27,13 @@ public class PingService {
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final List<IpObj> ipObjList = Collections.synchronizedList(new ArrayList<>());
+    private final Lock pauseLock = new ReentrantLock();
     @Inject
     IPModelRepository ipModelRepository;
     @Inject
     PingSettingsRepository pingSettingsRepository;
     @Inject
     PingResultRepository pingResultRepository;
-
     @Inject
     @Named("pingExecutor")
     ExecutorService pingExecutor;
@@ -38,6 +41,7 @@ public class PingService {
     private String packetSize = null;
 
 //    private List<Callable<PingResult>> pingTasks = new ArrayList<>();
+private final Semaphore semaphore = new Semaphore(2000); // Limit concurrent tasks
 
 
     public void ping(@Observes StartupEvent ev) {
@@ -62,12 +66,11 @@ public class PingService {
                         failure -> log.error("Failed to load IP addresses: {}", failure.getMessage())
                 );
 
-        System.out.println(OffsetDateTime.now());
 
     }
 
     private void schedulePing() {
-        scheduler.scheduleWithFixedDelay(this::pingI, 0, 30, TimeUnit.SECONDS);
+        scheduler.scheduleWithFixedDelay(this::pingI, 0, 60, TimeUnit.SECONDS);
     }
 
     private void pingI() {
@@ -79,63 +82,54 @@ public class PingService {
                 .iterable(ipObjList)
                 .onItem()
                 .transform(PingTask::new)
-                .collect().asList()
                 .onItem()
-                .transform(Unchecked.function(pingTasks -> {
-                    try {
-                        return pingExecutor.invokeAll(pingTasks);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }))
-                .onItem()
-
-
-                .transform(
-                        Unchecked.function(ipObj -> {
-                            try {
-                                var pingr = pingExecutor.submit(new PingTask(ipObj));
-
-                                return pingr.get();
-                            } catch (InterruptedException e) {
-                                log.error(e.getMessage());
+                .transformToUniAndMerge(pi ->
+                        Uni.createFrom().completionStage(() -> {
+                            if (semaphore.tryAcquire()) {
+                                return CompletableFuture.supplyAsync(() -> {
+                                    try {
+                                        return pi.call();
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    } finally {
+                                        semaphore.release();
+                                    }
+                                }, pingExecutor);
+                            } else {
+                                return CompletableFuture.failedFuture(new RejectedExecutionException("Task rejected due to semaphore limit"));
                             }
-                            return null;
                         }))
-//                .runSubscriptionOn(pingExecutor)
-                .collect().asList().toMulti()
+                .collect().asList()
+                .emitOn(pingExecutor)
+                .onItem()
                 .invoke(savePingResultList -> {
                     log.info("Saving Ping Result: {}", savePingResultList.size());
                     pingResultRepository.saveAll(savePingResultList);
 
                 })
+                .runSubscriptionOn(pingExecutor)
                 .subscribe()
                 .with(pingResults -> log.info("Ping results processed successfully"),
                         failure -> log.error("Failed to save Ping Result: {}", failure.getMessage(), failure.getCause())
-//                        () -> {
-//                            pingExecutor.shutdown();
-//                            try {
-//                                if (!pingExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
-//                                 var tobeExec =   pingExecutor.shutdownNow();
-//                                    log.info("Task waiting to be executed {}",tobeExec.size());
-//
-//                                    if (!pingExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
-//                                        log.error("Executor did not terminate");
-//                                    }
-//                                }
-//                            } catch (InterruptedException e) {
-//                                log.error("Error during executor termination", e);
-//                                pingExecutor.shutdownNow();
-//                                Thread.currentThread().interrupt();
-//                            }
-//                            log.info("Ping executor shut down successfully");
-//                        }
                 );
 
 
     }
 
 
+    public int updateIpModel(String newIpAddress, String oldIpAddress, UUID id) {
+        pauseLock.lock();
+        try {
+            var index = ipObjList.indexOf(new IpObj(oldIpAddress, id));
+            if (index != -1) {
+                ipObjList.set(index, new IpObj(newIpAddress, id));
+                return 1;
+            }
+        } finally {
+            pauseLock.unlock();
+        }
+        return -1;
+    }
 
 
 }

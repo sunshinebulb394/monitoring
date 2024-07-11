@@ -13,23 +13,21 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.parsetools.RecordParser;
 import io.vertx.ext.web.FileUpload;
 
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static com.georgebanin.utils.PingUtilitiez.checkIfIpIsValidIp;
 
@@ -49,6 +47,9 @@ public class IpModelServiceImpl implements IpModelService {
 
     @Inject
     ObjectsValidator<IpModelDto> objectsValidator;
+
+    @Inject
+    PingService pingService;
 
     @Override
     public Uni<ResponseDto> getById(UUID id) throws IpModelException {
@@ -99,6 +100,35 @@ public class IpModelServiceImpl implements IpModelService {
         return Uni.createFrom().item(new ResponseDto("Successfull",200,"Upload successfull", OffsetDateTime.now()));
 
 
+    }
+
+    @Override
+    public Uni<?> updateIpModel(JsonObject body) throws IpModelException, ObjectNotValidException {
+        var oldId = UUID.fromString(body.getString("id"));
+        var oldIpAddress = body.getString("oldIpAddress");
+        var newIp = body.getString("newIpAddress");
+        var newIpGroup = body.getString("newIpGroup");
+
+        var dto = IpModelDto.builder().ipAddress(newIp).ipGroup(newIpGroup).build();
+        objectsValidator.validate(dto);
+     return  ipModelRepository
+                .findById(oldId)
+                        .onItem()
+                .transform(ipModel -> {
+                    ipModel.setIpAddress(newIp);
+                    ipModel.setIpGroup(newIpGroup);
+                    return ipModel;
+                })
+                 .flatMap(ipModel -> {
+                     try {
+                         return ipModelRepository.update(ipModel);
+                     } catch (ObjectNotValidException e) {
+                         // Handle the exception and return a failed Uni
+                         return Uni.createFrom().failure(new ObjectNotValidException(e.getMessage()));
+                     }
+                 })
+                 .call(ipModel -> Uni.createFrom().item(pingService.updateIpModel(newIp, oldIpAddress,ipModel.getId())))
+                 .map(ipModel -> ResponseDto.transformToResponse("Successfull",200,ipModel));
     }
 
 

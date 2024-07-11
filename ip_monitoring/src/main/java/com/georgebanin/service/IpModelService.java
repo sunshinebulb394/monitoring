@@ -7,12 +7,14 @@ import com.georgebanin.exceptions.ObjectNotValidException;
 import com.georgebanin.model.IpModel;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.mutiny.core.buffer.Buffer;
 
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -23,4 +25,6 @@ public interface IpModelService {
     Uni<ResponseDto> createIpModel(IpModelDto ipModelDto) throws IpModelException, ObjectNotValidException;
 
     Uni<?> uploadIpFile(List<FileUpload> uploads) throws IOException;
+
+    Uni<?> updateIpModel(JsonObject body) throws IpModelException, ObjectNotValidException;
 }
