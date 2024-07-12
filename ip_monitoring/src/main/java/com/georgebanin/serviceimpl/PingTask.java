@@ -7,7 +7,9 @@ import com.georgebanin.utils.LinuxApplePingCommands;
 import com.georgebanin.utils.WindowsPingCommands;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.buffer.Buffer;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,12 +27,14 @@ public class PingTask  {
 
     private final String OS = System.getProperty("os.name").toLowerCase();
 
-    public PingTask(IpObj ipObj) {
+    private final ChatWebSocket chatWebSocket;
+
+    public PingTask(IpObj ipObj, ChatWebSocket chatWebSocket) {
         this.ipObj = ipObj;
+        this.chatWebSocket = chatWebSocket;
     }
 
-    @Inject
-    ChatWebSocket chatWebSocket;
+
 
 
 
@@ -46,11 +50,6 @@ public class PingTask  {
             processBuilder = new ProcessBuilder("ping", ip.getIpAddress(), WindowsPingCommands.count, "2");
             var startTime = OffsetDateTime.now();
             Process process = processBuilder.start();
-            boolean finished = process.waitFor(500, TimeUnit.MILLISECONDS);
-            if(!finished){
-                process.destroy();
-            }
-
             var endTime = OffsetDateTime.now();
            return buildWindowsPingResults(process,ip,startTime,endTime);
 
@@ -60,15 +59,12 @@ public class PingTask  {
             processBuilder = new ProcessBuilder("ping", ip.getIpAddress(), LinuxApplePingCommands.count, "2");
             var startTime = OffsetDateTime.now();
             Process process = processBuilder.start();
-//            boolean finished = process.waitFor(1000, TimeUnit.MILLISECONDS);
             var endTime = OffsetDateTime.now();
             return  buildLinuxApplePingResults(process,ip,startTime,endTime);
 
         }else {
             log.warn("Unsupported OS: {}", OS);
             return null;
-
-//            throw new RuntimeException("Unsupported OS: " + OS);
         }
 
     }
@@ -147,8 +143,8 @@ public class PingTask  {
 
 
         log.debug(pingResult.toString());
-//        chatWebSocket.broadcast(jsonObject.toString());
-//        savePingResultList(pingResult);
+
+        chatWebSocket.broadcast(jsonObject.toString());
         return pingResult;
     }
 
@@ -198,11 +194,10 @@ public class PingTask  {
         pingResult.setAdditionalInfo(jsonObject);
         pingResult.setCreatedBy("Quartz");
         pingResult.setIpAddress(ip.getIpAddress());
-        log.debug(pingResult.toString());
+         log.debug(pingResult.toString());
 //        sendPingResult(pingResult);
-//        chatWebSocket.broadcast(jsonObject.toString());
-//
-//        savePingResultList(pingResult);
+        chatWebSocket.broadcast(jsonObject.toString());
+
         return pingResult;
 
     }

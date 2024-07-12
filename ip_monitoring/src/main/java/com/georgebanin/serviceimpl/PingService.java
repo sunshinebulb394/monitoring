@@ -1,5 +1,6 @@
 package com.georgebanin.serviceimpl;
 
+import com.georgebanin.controller.ChatWebSocket;
 import com.georgebanin.model.IpObj;
 import com.georgebanin.repoository.IPModelRepository;
 import com.georgebanin.repoository.PingResultRepository;
@@ -37,6 +38,10 @@ public class PingService {
     @Inject
     @Named("pingExecutor")
     ExecutorService pingExecutor;
+
+    @Inject
+    ChatWebSocket chatWebSocket;
+
     private String countSize = null;
     private String packetSize = null;
 
@@ -81,7 +86,7 @@ private final Semaphore semaphore = new Semaphore(4000); // Limit concurrent tas
         Multi.createFrom()
                 .iterable(ipObjList)
                 .onItem()
-                .transform(PingTask::new)
+                .transform(ipObj -> new PingTask(ipObj,chatWebSocket))
                 .onItem()
                 .transformToUniAndMerge(pi ->
                         Uni.createFrom().completionStage(() -> {

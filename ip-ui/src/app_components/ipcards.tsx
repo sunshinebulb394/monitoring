@@ -15,7 +15,7 @@ interface ResponseObj {
 
 async function getData() {
     "use server"
-        const res = await fetch(`${process.env.BASE_URL}/stats/ip`,
+         const res = await fetch(`${process.env.BASE_URL}/api/v1/stats/ip`,
         // { next: { revalidate: 300 } }
     );
     const jsonData: ResponseObj = await res.json();
