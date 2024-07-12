@@ -41,7 +41,7 @@ public class PingService {
     private String packetSize = null;
 
 //    private List<Callable<PingResult>> pingTasks = new ArrayList<>();
-private final Semaphore semaphore = new Semaphore(2000); // Limit concurrent tasks
+private final Semaphore semaphore = new Semaphore(4000); // Limit concurrent tasks
 
 
     public void ping(@Observes StartupEvent ev) {
@@ -70,7 +70,7 @@ private final Semaphore semaphore = new Semaphore(2000); // Limit concurrent tas
     }
 
     private void schedulePing() {
-        scheduler.scheduleWithFixedDelay(this::pingI, 0, 60, TimeUnit.SECONDS);
+        scheduler.scheduleWithFixedDelay(this::pingI, 0, 120, TimeUnit.SECONDS);
     }
 
     private void pingI() {
