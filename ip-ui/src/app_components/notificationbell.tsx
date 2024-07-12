@@ -45,6 +45,7 @@ async function pingD(
         pingResult: data,
         unread: true,
       };
+      
       const savedPingData = localStorage.getItem("pingData");
       let parsedPingData: PingDataMap[] = savedPingData
         ? JSON.parse(savedPingData)
